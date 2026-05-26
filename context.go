@@ -15,24 +15,12 @@
 package macaron
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"html/template"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
-	"os"
-	"path"
-	"path/filepath"
 	"reflect"
-	"strconv"
-	"strings"
-	"time"
 
 	"github.com/go-macaron/inject"
-	"github.com/unknwon/com"
-	"golang.org/x/crypto/pbkdf2"
 )
 
 // Locale reprents a localization interface.
@@ -48,36 +36,36 @@ type RequestBody struct {
 
 // Bytes reads and returns content of request body in bytes.
 func (rb *RequestBody) Bytes() ([]byte, error) {
-	return io.ReadAll(rb.reader)
+	_ = "STUB: not implemented"
+	return nil,
+
+		// String reads and returns content of request body in string.
+		nil
 }
 
-// String reads and returns content of request body in string.
-func (rb *RequestBody) String() (string, error) {
-	data, err := rb.Bytes()
-	return string(data), err
-}
+func (rb *RequestBody) String() (string, error) { _ = "STUB: not implemented"; return "", nil }
 
 // ReadCloser returns a ReadCloser for request body.
 func (rb *RequestBody) ReadCloser() io.ReadCloser {
-	return rb.reader
+	_ = "STUB: not implemented"
+
+	// Request represents an HTTP request received by a server or to be sent by a client.
+	return *new(io.ReadCloser)
 }
 
-// Request represents an HTTP request received by a server or to be sent by a client.
 type Request struct {
 	*http.Request
 }
 
 // Body returns a RequestBody for the request
-func (r *Request) Body() *RequestBody {
-	return &RequestBody{r.Request.Body}
-}
+func (r *Request) Body() *RequestBody { _ = "STUB: not implemented"; return nil }
 
 // ContextInvoker is an inject.FastInvoker wrapper of func(ctx *Context).
 type ContextInvoker func(ctx *Context)
 
 // Invoke implements inject.FastInvoker which simplifies calls of `func(ctx *Context)` function.
 func (invoke ContextInvoker) Invoke(params []interface{}) ([]reflect.Value, error) {
-	invoke(params[0].(*Context))
+	_ = "STUB: not implemented"
 	return nil, nil
 }
 
@@ -98,464 +86,177 @@ type Context struct {
 	Data map[string]interface{}
 }
 
-func (ctx *Context) handler() Handler {
-	if ctx.index < len(ctx.handlers) {
-		return ctx.handlers[ctx.index]
-	}
-	if ctx.index == len(ctx.handlers) {
-		return ctx.action
-	}
-	panic("invalid index for context handler")
-}
+func (ctx *Context) handler() Handler { _ = "STUB: not implemented"; return *new(Handler) }
 
 // Next runs the next handler in the context chain
-func (ctx *Context) Next() {
-	ctx.index++
-	ctx.run()
-}
+func (ctx *Context) Next() { _ = "STUB: not implemented"; return }
 
 // Written returns whether the context response has been written to
-func (ctx *Context) Written() bool {
-	return ctx.Resp.Written()
-}
+func (ctx *Context) Written() bool { _ = "STUB: not implemented"; return false }
 
-func (ctx *Context) run() {
-	for ctx.index <= len(ctx.handlers) {
-		vals, err := ctx.Invoke(ctx.handler())
-		if err != nil {
-			panic(err)
-		}
-		ctx.index++
+func (ctx *Context) run() { _ = "STUB: not implemented"; return }
 
-		// if the handler returned something, write it to the http response
-		if len(vals) > 0 {
-			ev := ctx.GetVal(reflect.TypeOf(ReturnHandler(nil)))
-			handleReturn := ev.Interface().(ReturnHandler)
-			handleReturn(ctx, vals)
-		}
-
-		if ctx.Written() {
-			return
-		}
-	}
-}
+// if the handler returned something, write it to the http response
 
 // RemoteAddr returns more real IP address.
-func (ctx *Context) RemoteAddr() string {
-	addr := ctx.Req.Header.Get("X-Real-IP")
-	if len(addr) == 0 {
-		addr = ctx.Req.Header.Get("X-Forwarded-For")
-		if addr == "" {
-			addr = ctx.Req.RemoteAddr
-			if i := strings.LastIndex(addr, ":"); i > -1 {
-				addr = addr[:i]
-			}
-		}
-	}
-	return addr
-}
+func (ctx *Context) RemoteAddr() string { _ = "STUB: not implemented"; return "" }
 
 func (ctx *Context) renderHTML(status int, setName, tplName string, data ...interface{}) {
-	if len(data) <= 0 {
-		ctx.Render.HTMLSet(status, setName, tplName, ctx.Data)
-	} else if len(data) == 1 {
-		ctx.Render.HTMLSet(status, setName, tplName, data[0])
-	} else {
-		ctx.Render.HTMLSet(status, setName, tplName, data[0], data[1].(HTMLOptions))
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // HTML renders the HTML with default template set.
 func (ctx *Context) HTML(status int, name string, data ...interface{}) {
-	ctx.renderHTML(status, DEFAULT_TPL_SET_NAME, name, data...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // HTMLSet renders the HTML with given template set name.
 func (ctx *Context) HTMLSet(status int, setName, tplName string, data ...interface{}) {
-	ctx.renderHTML(status, setName, tplName, data...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // Redirect sends a redirect response
-func (ctx *Context) Redirect(location string, status ...int) {
-	code := http.StatusFound
-	if len(status) == 1 {
-		code = status[0]
-	}
-
-	http.Redirect(ctx.Resp, ctx.Req.Request, location, code)
-}
+func (ctx *Context) Redirect(location string, status ...int) { _ = "STUB: not implemented"; return }
 
 // MaxMemory is the maximum amount of memory to use when parsing a multipart form.
 // Set this to whatever value you prefer; default is 10 MB.
 var MaxMemory = int64(1024 * 1024 * 10)
 
-func (ctx *Context) parseForm() {
-	if ctx.Req.Form != nil {
-		return
-	}
-
-	contentType := ctx.Req.Header.Get(_CONTENT_TYPE)
-	if (ctx.Req.Method == "POST" || ctx.Req.Method == "PUT") &&
-		len(contentType) > 0 && strings.Contains(contentType, "multipart/form-data") {
-		_ = ctx.Req.ParseMultipartForm(MaxMemory)
-	} else {
-		_ = ctx.Req.ParseForm()
-	}
-}
+func (ctx *Context) parseForm() { _ = "STUB: not implemented"; return }
 
 // Query querys form parameter.
-func (ctx *Context) Query(name string) string {
-	ctx.parseForm()
-	return ctx.Req.Form.Get(name)
-}
+func (ctx *Context) Query(name string) string { _ = "STUB: not implemented"; return "" }
 
 // QueryTrim querys and trims spaces form parameter.
-func (ctx *Context) QueryTrim(name string) string {
-	return strings.TrimSpace(ctx.Query(name))
-}
+func (ctx *Context) QueryTrim(name string) string { _ = "STUB: not implemented"; return "" }
 
 // QueryStrings returns a list of results by given query name.
-func (ctx *Context) QueryStrings(name string) []string {
-	ctx.parseForm()
-
-	vals, ok := ctx.Req.Form[name]
-	if !ok {
-		return []string{}
-	}
-	return vals
-}
+func (ctx *Context) QueryStrings(name string) []string { _ = "STUB: not implemented"; return nil }
 
 // QueryEscape returns escapred query result.
-func (ctx *Context) QueryEscape(name string) string {
-	return template.HTMLEscapeString(ctx.Query(name))
-}
+func (ctx *Context) QueryEscape(name string) string { _ = "STUB: not implemented"; return "" }
 
 // QueryBool returns query result in bool type.
-func (ctx *Context) QueryBool(name string) bool {
-	v, _ := strconv.ParseBool(ctx.Query(name))
-	return v
-}
+func (ctx *Context) QueryBool(name string) bool { _ = "STUB: not implemented"; return false }
 
 // QueryInt returns query result in int type.
-func (ctx *Context) QueryInt(name string) int {
-	return com.StrTo(ctx.Query(name)).MustInt()
-}
+func (ctx *Context) QueryInt(name string) int { _ = "STUB: not implemented"; return 0 }
 
 // QueryInt64 returns query result in int64 type.
-func (ctx *Context) QueryInt64(name string) int64 {
-	return com.StrTo(ctx.Query(name)).MustInt64()
-}
+func (ctx *Context) QueryInt64(name string) int64 { _ = "STUB: not implemented"; return 0 }
 
 // QueryFloat64 returns query result in float64 type.
-func (ctx *Context) QueryFloat64(name string) float64 {
-	v, _ := strconv.ParseFloat(ctx.Query(name), 64)
-	return v
-}
+func (ctx *Context) QueryFloat64(name string) float64 { _ = "STUB: not implemented"; return 0 }
 
 // Params returns value of given param name.
 // e.g. ctx.Params(":uid") or ctx.Params("uid")
-func (ctx *Context) Params(name string) string {
-	if len(name) == 0 {
-		return ""
-	}
-	if len(name) > 1 && name[0] != ':' {
-		name = ":" + name
-	}
-	return ctx.params[name]
-}
+func (ctx *Context) Params(name string) string { _ = "STUB: not implemented"; return "" }
 
 // AllParams returns all params.
 func (ctx *Context) AllParams() Params {
-	return ctx.params
+	_ = "STUB: not implemented"
+
+	// SetParams sets value of param with given name.
+	return *new(Params)
 }
 
-// SetParams sets value of param with given name.
-func (ctx *Context) SetParams(name, val string) {
-	if name != "*" && !strings.HasPrefix(name, ":") {
-		name = ":" + name
-	}
-	ctx.params[name] = val
-}
+func (ctx *Context) SetParams(name, val string) { _ = "STUB: not implemented"; return }
 
 // ReplaceAllParams replace all current params with given params
-func (ctx *Context) ReplaceAllParams(params Params) {
-	ctx.params = params
-}
+func (ctx *Context) ReplaceAllParams(params Params) { _ = "STUB: not implemented"; return }
 
 // ParamsEscape returns escapred params result.
 // e.g. ctx.ParamsEscape(":uname")
-func (ctx *Context) ParamsEscape(name string) string {
-	return template.HTMLEscapeString(ctx.Params(name))
-}
+func (ctx *Context) ParamsEscape(name string) string { _ = "STUB: not implemented"; return "" }
 
 // ParamsInt returns params result in int type.
 // e.g. ctx.ParamsInt(":uid")
-func (ctx *Context) ParamsInt(name string) int {
-	return com.StrTo(ctx.Params(name)).MustInt()
-}
+func (ctx *Context) ParamsInt(name string) int { _ = "STUB: not implemented"; return 0 }
 
 // ParamsInt64 returns params result in int64 type.
 // e.g. ctx.ParamsInt64(":uid")
-func (ctx *Context) ParamsInt64(name string) int64 {
-	return com.StrTo(ctx.Params(name)).MustInt64()
-}
+func (ctx *Context) ParamsInt64(name string) int64 { _ = "STUB: not implemented"; return 0 }
 
 // ParamsFloat64 returns params result in int64 type.
 // e.g. ctx.ParamsFloat64(":uid")
-func (ctx *Context) ParamsFloat64(name string) float64 {
-	v, _ := strconv.ParseFloat(ctx.Params(name), 64)
-	return v
-}
+func (ctx *Context) ParamsFloat64(name string) float64 { _ = "STUB: not implemented"; return 0 }
 
 // GetFile returns information about user upload file by given form field name.
 func (ctx *Context) GetFile(name string) (multipart.File, *multipart.FileHeader, error) {
-	return ctx.Req.FormFile(name)
+	_ = "STUB: not implemented"
+	return *new(multipart.File), nil, nil
 }
 
 // SaveToFile reads a file from request by field name and saves to given path.
-func (ctx *Context) SaveToFile(name, savePath string) error {
-	fr, _, err := ctx.GetFile(name)
-	if err != nil {
-		return err
-	}
-	defer fr.Close()
-
-	fw, err := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		return err
-	}
-	defer fw.Close()
-
-	_, err = io.Copy(fw, fr)
-	return err
-}
+func (ctx *Context) SaveToFile(name, savePath string) error { _ = "STUB: not implemented"; return nil }
 
 // SetCookie sets given cookie value to response header.
 // FIXME: IE support? http://golanghome.com/post/620#reply2
 func (ctx *Context) SetCookie(name string, value string, others ...interface{}) {
-	cookie := http.Cookie{}
-	cookie.Name = name
-	cookie.Value = url.QueryEscape(value)
-
-	if len(others) > 0 {
-		switch v := others[0].(type) {
-		case int:
-			cookie.MaxAge = v
-		case int64:
-			cookie.MaxAge = int(v)
-		case int32:
-			cookie.MaxAge = int(v)
-		case func(*http.Cookie):
-			v(&cookie)
-		}
-	}
-
-	cookie.Path = "/"
-	if len(others) > 1 {
-		if v, ok := others[1].(string); ok && len(v) > 0 {
-			cookie.Path = v
-		} else if v, ok := others[1].(func(*http.Cookie)); ok {
-			v(&cookie)
-		}
-	}
-
-	if len(others) > 2 {
-		if v, ok := others[2].(string); ok && len(v) > 0 {
-			cookie.Domain = v
-		} else if v, ok := others[1].(func(*http.Cookie)); ok {
-			v(&cookie)
-		}
-	}
-
-	if len(others) > 3 {
-		switch v := others[3].(type) {
-		case bool:
-			cookie.Secure = v
-		case func(*http.Cookie):
-			v(&cookie)
-		default:
-			if others[3] != nil {
-				cookie.Secure = true
-			}
-		}
-	}
-
-	if len(others) > 4 {
-		if v, ok := others[4].(bool); ok && v {
-			cookie.HttpOnly = true
-		} else if v, ok := others[1].(func(*http.Cookie)); ok {
-			v(&cookie)
-		}
-	}
-
-	if len(others) > 5 {
-		if v, ok := others[5].(time.Time); ok {
-			cookie.Expires = v
-			cookie.RawExpires = v.Format(time.UnixDate)
-		} else if v, ok := others[1].(func(*http.Cookie)); ok {
-			v(&cookie)
-		}
-	}
-
-	if len(others) > 6 {
-		for _, other := range others[6:] {
-			if v, ok := other.(func(*http.Cookie)); ok {
-				v(&cookie)
-			}
-		}
-	}
-
-	ctx.Resp.Header().Add("Set-Cookie", cookie.String())
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetCookie returns given cookie value from request header.
-func (ctx *Context) GetCookie(name string) string {
-	cookie, err := ctx.Req.Cookie(name)
-	if err != nil {
-		return ""
-	}
-	val, _ := url.QueryUnescape(cookie.Value)
-	return val
-}
+func (ctx *Context) GetCookie(name string) string { _ = "STUB: not implemented"; return "" }
 
 // GetCookieInt returns cookie result in int type.
-func (ctx *Context) GetCookieInt(name string) int {
-	return com.StrTo(ctx.GetCookie(name)).MustInt()
-}
+func (ctx *Context) GetCookieInt(name string) int { _ = "STUB: not implemented"; return 0 }
 
 // GetCookieInt64 returns cookie result in int64 type.
-func (ctx *Context) GetCookieInt64(name string) int64 {
-	return com.StrTo(ctx.GetCookie(name)).MustInt64()
-}
+func (ctx *Context) GetCookieInt64(name string) int64 { _ = "STUB: not implemented"; return 0 }
 
 // GetCookieFloat64 returns cookie result in float64 type.
-func (ctx *Context) GetCookieFloat64(name string) float64 {
-	v, _ := strconv.ParseFloat(ctx.GetCookie(name), 64)
-	return v
-}
+func (ctx *Context) GetCookieFloat64(name string) float64 { _ = "STUB: not implemented"; return 0 }
 
 var defaultCookieSecret string
 
 // SetDefaultCookieSecret sets global default secure cookie secret.
-func (m *Macaron) SetDefaultCookieSecret(secret string) {
-	defaultCookieSecret = secret
-}
+func (m *Macaron) SetDefaultCookieSecret(secret string) { _ = "STUB: not implemented"; return }
 
 // SetSecureCookie sets given cookie value to response header with default secret string.
 func (ctx *Context) SetSecureCookie(name, value string, others ...interface{}) {
-	ctx.SetSuperSecureCookie(defaultCookieSecret, name, value, others...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetSecureCookie returns given cookie value from request header with default secret string.
 func (ctx *Context) GetSecureCookie(key string) (string, bool) {
-	return ctx.GetSuperSecureCookie(defaultCookieSecret, key)
+	_ = "STUB: not implemented"
+	return "", false
 }
 
 // SetSuperSecureCookie sets given cookie value to response header with secret string.
 func (ctx *Context) SetSuperSecureCookie(secret, name, value string, others ...interface{}) {
-	key := pbkdf2.Key([]byte(secret), []byte(secret), 1000, 16, sha256.New)
-	text, err := com.AESGCMEncrypt(key, []byte(value))
-	if err != nil {
-		panic("error encrypting cookie: " + err.Error())
-	}
-
-	ctx.SetCookie(name, hex.EncodeToString(text), others...)
+	_ = "STUB: not implemented"
+	return
 }
 
 // GetSuperSecureCookie returns given cookie value from request header with secret string.
 func (ctx *Context) GetSuperSecureCookie(secret, name string) (string, bool) {
-	val := ctx.GetCookie(name)
-	if val == "" {
-		return "", false
-	}
-
-	text, err := hex.DecodeString(val)
-	if err != nil {
-		return "", false
-	}
-
-	key := pbkdf2.Key([]byte(secret), []byte(secret), 1000, 16, sha256.New)
-	text, err = com.AESGCMDecrypt(key, text)
-	return string(text), err == nil
+	_ = "STUB: not implemented"
+	return "", false
 }
 
-func (ctx *Context) setRawContentHeader() {
-	ctx.Resp.Header().Set("Content-Description", "Raw content")
-	ctx.Resp.Header().Set("Content-Type", "text/plain")
-	ctx.Resp.Header().Set("Expires", "0")
-	ctx.Resp.Header().Set("Cache-Control", "must-revalidate")
-	ctx.Resp.Header().Set("Pragma", "public")
-}
+func (ctx *Context) setRawContentHeader() { _ = "STUB: not implemented"; return }
 
 // ServeContent serves given content to response.
 func (ctx *Context) ServeContent(name string, r io.ReadSeeker, params ...interface{}) {
-	modtime := time.Now()
-	for _, p := range params {
-		switch v := p.(type) {
-		case time.Time:
-			modtime = v
-		}
-	}
-
-	ctx.setRawContentHeader()
-	http.ServeContent(ctx.Resp, ctx.Req.Request, name, modtime, r)
+	_ = "STUB: not implemented"
+	return
 }
 
 // ServeFileContent serves given file as content to response.
 func (ctx *Context) ServeFileContent(file string, names ...string) {
-	var name string
-	if len(names) > 0 {
-		name = names[0]
-	} else {
-		name = path.Base(file)
-	}
-
-	f, err := os.Open(file)
-	if err != nil {
-		if Env == PROD {
-			http.Error(ctx.Resp, "Internal Server Error", 500)
-		} else {
-			http.Error(ctx.Resp, err.Error(), 500)
-		}
-		return
-	}
-	defer f.Close()
-
-	ctx.setRawContentHeader()
-	http.ServeContent(ctx.Resp, ctx.Req.Request, name, time.Now(), f)
+	_ = "STUB: not implemented"
+	return
 }
 
 // ServeFile serves given file to response.
-func (ctx *Context) ServeFile(file string, names ...string) {
-	var name string
-	if len(names) > 0 {
-		name = names[0]
-	} else {
-		name = path.Base(file)
-	}
-	ctx.Resp.Header().Set("Content-Description", "File Transfer")
-	ctx.Resp.Header().Set("Content-Type", "application/octet-stream")
-	ctx.Resp.Header().Set("Content-Disposition", "attachment; filename="+name)
-	ctx.Resp.Header().Set("Content-Transfer-Encoding", "binary")
-	ctx.Resp.Header().Set("Expires", "0")
-	ctx.Resp.Header().Set("Cache-Control", "must-revalidate")
-	ctx.Resp.Header().Set("Pragma", "public")
-	http.ServeFile(ctx.Resp, ctx.Req.Request, file)
-}
+func (ctx *Context) ServeFile(file string, names ...string) { _ = "STUB: not implemented"; return }
 
 // ChangeStaticPath changes static path from old to new one.
-func (ctx *Context) ChangeStaticPath(oldPath, newPath string) {
-	if !filepath.IsAbs(oldPath) {
-		oldPath = filepath.Join(Root, oldPath)
-	}
-	dir := statics.Get(oldPath)
-	if dir != nil {
-		statics.Delete(oldPath)
-
-		if !filepath.IsAbs(newPath) {
-			newPath = filepath.Join(Root, newPath)
-		}
-		*dir = http.Dir(newPath)
-		statics.Set(dir)
-	}
-}
+func (ctx *Context) ChangeStaticPath(oldPath, newPath string) { _ = "STUB: not implemented"; return }

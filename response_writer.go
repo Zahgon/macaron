@@ -16,7 +16,6 @@ package macaron
 
 import (
 	"bufio"
-	"errors"
 	"net"
 	"net/http"
 )
@@ -44,7 +43,8 @@ type BeforeFunc func(ResponseWriter)
 
 // NewResponseWriter creates a ResponseWriter that wraps an http.ResponseWriter
 func NewResponseWriter(method string, rw http.ResponseWriter) ResponseWriter {
-	return &responseWriter{method, rw, 0, 0, nil}
+	_ = "STUB: not implemented"
+	return *new(ResponseWriter)
 }
 
 type responseWriter struct {
@@ -55,70 +55,36 @@ type responseWriter struct {
 	beforeFuncs []BeforeFunc
 }
 
-func (rw *responseWriter) WriteHeader(s int) {
-	rw.callBefore()
-	rw.ResponseWriter.WriteHeader(s)
-	rw.status = s
-}
+func (rw *responseWriter) WriteHeader(s int) { _ = "STUB: not implemented"; return }
 
 func (rw *responseWriter) Write(b []byte) (size int, err error) {
-	if !rw.Written() {
-		// The status will be StatusOK if WriteHeader has not been called yet
-		rw.WriteHeader(http.StatusOK)
-	}
-	if rw.method != "HEAD" {
-		size, err = rw.ResponseWriter.Write(b)
-		rw.size += size
-	}
-	return size, err
+	_ = "STUB: not implemented"
+
+	// The status will be StatusOK if WriteHeader has not been called yet
+	return 0, nil
 }
 
-func (rw *responseWriter) Status() int {
-	return rw.status
-}
+func (rw *responseWriter) Status() int { _ = "STUB: not implemented"; return 0 }
 
-func (rw *responseWriter) Size() int {
-	return rw.size
-}
+func (rw *responseWriter) Size() int { _ = "STUB: not implemented"; return 0 }
 
-func (rw *responseWriter) Written() bool {
-	return rw.status != 0
-}
+func (rw *responseWriter) Written() bool { _ = "STUB: not implemented"; return false }
 
-func (rw *responseWriter) Before(before BeforeFunc) {
-	rw.beforeFuncs = append(rw.beforeFuncs, before)
-}
+func (rw *responseWriter) Before(before BeforeFunc) { _ = "STUB: not implemented"; return }
 
 func (rw *responseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	hijacker, ok := rw.ResponseWriter.(http.Hijacker)
-	if !ok {
-		return nil, nil, errors.New("the ResponseWriter doesn't support the Hijacker interface")
-	}
-	return hijacker.Hijack()
+	_ = "STUB: not implemented"
+	return *new(net.Conn), nil, nil
 }
 
-//nolint
-func (rw *responseWriter) CloseNotify() <-chan bool {
-	return rw.ResponseWriter.(http.CloseNotifier).CloseNotify()
-}
+// nolint
+func (rw *responseWriter) CloseNotify() <-chan bool { _ = "STUB: not implemented"; return nil }
 
-func (rw *responseWriter) callBefore() {
-	for i := len(rw.beforeFuncs) - 1; i >= 0; i-- {
-		rw.beforeFuncs[i](rw)
-	}
-}
+func (rw *responseWriter) callBefore() { _ = "STUB: not implemented"; return }
 
-func (rw *responseWriter) Flush() {
-	flusher, ok := rw.ResponseWriter.(http.Flusher)
-	if ok {
-		flusher.Flush()
-	}
-}
+func (rw *responseWriter) Flush() { _ = "STUB: not implemented"; return }
 
 func (rw *responseWriter) Push(target string, opts *http.PushOptions) error {
-	pusher, ok := rw.ResponseWriter.(http.Pusher)
-	if !ok {
-		return errors.New("the ResponseWriter doesn't support the Pusher interface")
-	}
-	return pusher.Push(target, opts)
+	_ = "STUB: not implemented"
+	return nil
 }

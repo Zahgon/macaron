@@ -15,17 +15,6 @@
 
 package macaron
 
-import (
-	"bytes"
-	"fmt"
-	"log"
-	"net/http"
-	"os"
-	"runtime"
-
-	"github.com/go-macaron/inject"
-)
-
 const (
 	panicHtml = `<html>
 <head><title>PANIC: %s</title>
@@ -71,93 +60,39 @@ var (
 )
 
 // stack returns a nicely formated stack frame, skipping skip frames
-func stack(skip int) []byte {
-	buf := new(bytes.Buffer) // the returned data
-	// As we loop, we open files and read them. These variables record the currently
-	// loaded file.
-	var lines [][]byte
-	var lastFile string
-	for i := skip; ; i++ { // Skip the expected number of frames
-		pc, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-		// Print this much at least.  If we can't find the source, it won't show.
-		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
-		if file != lastFile {
-			data, err := os.ReadFile(file)
-			if err != nil {
-				continue
-			}
-			lines = bytes.Split(data, []byte{'\n'})
-			lastFile = file
-		}
-		fmt.Fprintf(buf, "\t%s: %s\n", function(pc), source(lines, line))
-	}
-	return buf.Bytes()
-}
+func stack(skip int) []byte { _ = "STUB: not implemented"; return nil }
+
+// the returned data
+// As we loop, we open files and read them. These variables record the currently
+// loaded file.
+
+// Skip the expected number of frames
+
+// Print this much at least.  If we can't find the source, it won't show.
 
 // source returns a space-trimmed slice of the n'th line.
 func source(lines [][]byte, n int) []byte {
-	n-- // in stack trace, lines are 1-indexed but our array is 0-indexed
-	if n < 0 || n >= len(lines) {
-		return dunno
-	}
-	return bytes.TrimSpace(lines[n])
+	_ = "STUB: not implemented"
+	// in stack trace, lines are 1-indexed but our array is 0-indexed
+	return nil
 }
 
 // function returns, if possible, the name of the function containing the PC.
-func function(pc uintptr) []byte {
-	fn := runtime.FuncForPC(pc)
-	if fn == nil {
-		return dunno
-	}
-	name := []byte(fn.Name())
-	// The name includes the path name to the package, which is unnecessary
-	// since the file name is already included.  Plus, it has center dots.
-	// That is, we see
-	//	runtime/debug.*T·ptrmethod
-	// and want
-	//	*T.ptrmethod
-	// Also the package path might contains dot (e.g. code.google.com/...),
-	// so first eliminate the path prefix
-	if lastslash := bytes.LastIndex(name, slash); lastslash >= 0 {
-		name = name[lastslash+1:]
-	}
-	if period := bytes.Index(name, dot); period >= 0 {
-		name = name[period+1:]
-	}
-	name = bytes.ReplaceAll(name, centerDot, dot)
-	return name
-}
+func function(pc uintptr) []byte { _ = "STUB: not implemented"; return nil }
+
+// The name includes the path name to the package, which is unnecessary
+// since the file name is already included.  Plus, it has center dots.
+// That is, we see
+//	runtime/debug.*T·ptrmethod
+// and want
+//	*T.ptrmethod
+// Also the package path might contains dot (e.g. code.google.com/...),
+// so first eliminate the path prefix
 
 // Recovery returns a middleware that recovers from any panics and writes a 500 if there was one.
 // While Martini is in development mode, Recovery will also output the panic as HTML.
-func Recovery() Handler {
-	return func(c *Context, log *log.Logger) {
-		defer func() {
-			if err := recover(); err != nil {
-				stack := stack(3)
-				log.Printf("PANIC: %s\n%s", err, stack)
+func Recovery() Handler { _ = "STUB: not implemented"; return *new(Handler) }
 
-				// Lookup the current responsewriter
-				val := c.GetVal(inject.InterfaceOf((*http.ResponseWriter)(nil)))
-				res := val.Interface().(http.ResponseWriter)
+// Lookup the current responsewriter
 
-				// respond with panic message while in development mode
-				var body []byte
-				if Env == DEV {
-					res.Header().Set("Content-Type", "text/html")
-					body = []byte(fmt.Sprintf(panicHtml, err, err, stack))
-				}
-
-				res.WriteHeader(http.StatusInternalServerError)
-				if nil != body {
-					_, _ = res.Write(body)
-				}
-			}
-		}()
-
-		c.Next()
-	}
-}
+// respond with panic message while in development mode

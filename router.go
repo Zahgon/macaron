@@ -16,7 +16,6 @@ package macaron
 
 import (
 	"net/http"
-	"strings"
 	"sync"
 )
 
@@ -40,31 +39,13 @@ type routeMap struct {
 }
 
 // NewRouteMap initializes and returns a new routeMap.
-func NewRouteMap() *routeMap {
-	rm := &routeMap{
-		routes: make(map[string]map[string]*Leaf),
-	}
-	for m := range _HTTP_METHODS {
-		rm.routes[m] = make(map[string]*Leaf)
-	}
-	return rm
-}
+func NewRouteMap() *routeMap { _ = "STUB: not implemented"; return nil }
 
 // getLeaf returns Leaf object if a route has been registered.
-func (rm *routeMap) getLeaf(method, pattern string) *Leaf {
-	rm.lock.RLock()
-	defer rm.lock.RUnlock()
-
-	return rm.routes[method][pattern]
-}
+func (rm *routeMap) getLeaf(method, pattern string) *Leaf { _ = "STUB: not implemented"; return nil }
 
 // add adds new route to route tree map.
-func (rm *routeMap) add(method, pattern string, leaf *Leaf) {
-	rm.lock.Lock()
-	defer rm.lock.Unlock()
-
-	rm.routes[method][pattern] = leaf
-}
+func (rm *routeMap) add(method, pattern string, leaf *Leaf) { _ = "STUB: not implemented"; return }
 
 type group struct {
 	pattern  string
@@ -87,19 +68,11 @@ type Router struct {
 	handlerWrapper func(Handler) Handler
 }
 
-func NewRouter() *Router {
-	return &Router{
-		routers:     make(map[string]*Tree),
-		routeMap:    NewRouteMap(),
-		namedRoutes: make(map[string]*Leaf),
-	}
-}
+func NewRouter() *Router { _ = "STUB: not implemented"; return nil }
 
 // SetAutoHead sets the value who determines whether add HEAD method automatically
 // when GET method is added.
-func (r *Router) SetAutoHead(v bool) {
-	r.autoHead = v
-}
+func (r *Router) SetAutoHead(v bool) { _ = "STUB: not implemented"; return }
 
 type Params map[string]string
 
@@ -114,129 +87,59 @@ type Route struct {
 }
 
 // Name sets name of route.
-func (r *Route) Name(name string) {
-	if len(name) == 0 {
-		panic("route name cannot be empty")
-	} else if r.router.namedRoutes[name] != nil {
-		panic("route with given name already exists: " + name)
-	}
-	r.router.namedRoutes[name] = r.leaf
-}
+func (r *Route) Name(name string) { _ = "STUB: not implemented"; return }
 
 // handle adds new route to the router tree.
 func (r *Router) handle(method, pattern string, handle Handle) *Route {
-	method = strings.ToUpper(method)
-
-	var leaf *Leaf
-	// Prevent duplicate routes.
-	if leaf = r.getLeaf(method, pattern); leaf != nil {
-		return &Route{r, leaf}
-	}
-
-	// Validate HTTP methods.
-	if !_HTTP_METHODS[method] && method != "*" {
-		panic("unknown HTTP method: " + method)
-	}
-
-	// Generate methods need register.
-	methods := make(map[string]bool)
-	if method == "*" {
-		for m := range _HTTP_METHODS {
-			methods[m] = true
-		}
-	} else {
-		methods[method] = true
-	}
-
-	// Add to router tree.
-	for m := range methods {
-		if t, ok := r.routers[m]; ok {
-			leaf = t.Add(pattern, handle)
-		} else {
-			t := NewTree()
-			leaf = t.Add(pattern, handle)
-			r.routers[m] = t
-		}
-		r.add(m, pattern, leaf)
-	}
-	return &Route{r, leaf}
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Prevent duplicate routes.
+
+// Validate HTTP methods.
+
+// Generate methods need register.
+
+// Add to router tree.
 
 // Handle registers a new request handle with the given pattern, method and handlers.
 func (r *Router) Handle(method string, pattern string, handlers []Handler) *Route {
-	if len(r.groups) > 0 {
-		groupPattern := ""
-		h := make([]Handler, 0)
-		for _, g := range r.groups {
-			groupPattern += g.pattern
-			h = append(h, g.handlers...)
-		}
-
-		pattern = groupPattern + pattern
-		h = append(h, handlers...)
-		handlers = h
-	}
-	handlers = validateAndWrapHandlers(handlers, r.handlerWrapper)
-
-	return r.handle(method, pattern, func(resp http.ResponseWriter, req *http.Request, params Params) {
-		c := r.m.createContext(resp, req)
-		c.params = params
-		c.handlers = make([]Handler, 0, len(r.m.handlers)+len(handlers))
-		c.handlers = append(c.handlers, r.m.handlers...)
-		c.handlers = append(c.handlers, handlers...)
-		c.run()
-	})
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (r *Router) Group(pattern string, fn func(), h ...Handler) {
-	r.groups = append(r.groups, group{pattern, h})
-	fn()
-	r.groups = r.groups[:len(r.groups)-1]
-}
+func (r *Router) Group(pattern string, fn func(), h ...Handler) { _ = "STUB: not implemented"; return }
 
 // Get is a shortcut for r.Handle("GET", pattern, handlers)
 func (r *Router) Get(pattern string, h ...Handler) (leaf *Route) {
-	leaf = r.Handle("GET", pattern, h)
-	if r.autoHead {
-		r.Head(pattern, h...)
-	}
-	return leaf
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Patch is a shortcut for r.Handle("PATCH", pattern, handlers)
-func (r *Router) Patch(pattern string, h ...Handler) *Route {
-	return r.Handle("PATCH", pattern, h)
-}
+func (r *Router) Patch(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Post is a shortcut for r.Handle("POST", pattern, handlers)
-func (r *Router) Post(pattern string, h ...Handler) *Route {
-	return r.Handle("POST", pattern, h)
-}
+func (r *Router) Post(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Put is a shortcut for r.Handle("PUT", pattern, handlers)
-func (r *Router) Put(pattern string, h ...Handler) *Route {
-	return r.Handle("PUT", pattern, h)
-}
+func (r *Router) Put(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Delete is a shortcut for r.Handle("DELETE", pattern, handlers)
-func (r *Router) Delete(pattern string, h ...Handler) *Route {
-	return r.Handle("DELETE", pattern, h)
-}
+func (r *Router) Delete(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Options is a shortcut for r.Handle("OPTIONS", pattern, handlers)
 func (r *Router) Options(pattern string, h ...Handler) *Route {
-	return r.Handle("OPTIONS", pattern, h)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Head is a shortcut for r.Handle("HEAD", pattern, handlers)
-func (r *Router) Head(pattern string, h ...Handler) *Route {
-	return r.Handle("HEAD", pattern, h)
-}
+func (r *Router) Head(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Any is a shortcut for r.Handle("*", pattern, handlers)
-func (r *Router) Any(pattern string, h ...Handler) *Route {
-	return r.Handle("*", pattern, h)
-}
+func (r *Router) Any(pattern string, h ...Handler) *Route { _ = "STUB: not implemented"; return nil }
 
 // Route is a shortcut for same handlers but different HTTP methods.
 //
@@ -244,79 +147,40 @@ func (r *Router) Any(pattern string, h ...Handler) *Route {
 //
 //	m.Route("/", "GET,POST", h)
 func (r *Router) Route(pattern, methods string, h ...Handler) (route *Route) {
-	for _, m := range strings.Split(methods, ",") {
-		route = r.Handle(strings.TrimSpace(m), pattern, h)
-	}
-	return route
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Combo returns a combo router.
 func (r *Router) Combo(pattern string, h ...Handler) *ComboRouter {
-	return &ComboRouter{r, pattern, h, map[string]bool{}, nil}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NotFound configurates http.HandlerFunc which is called when no matching route is
 // found. If it is not set, http.NotFound is used.
 // Be sure to set 404 response code in your handler.
-func (r *Router) NotFound(handlers ...Handler) {
-	handlers = validateAndWrapHandlers(handlers)
-	r.notFound = func(rw http.ResponseWriter, req *http.Request) {
-		c := r.m.createContext(rw, req)
-		c.handlers = make([]Handler, 0, len(r.m.handlers)+len(handlers))
-		c.handlers = append(c.handlers, r.m.handlers...)
-		c.handlers = append(c.handlers, handlers...)
-		c.run()
-	}
-}
+func (r *Router) NotFound(handlers ...Handler) { _ = "STUB: not implemented"; return }
 
 // InternalServerError configurates handler which is called when route handler returns
 // error. If it is not set, default handler is used.
 // Be sure to set 500 response code in your handler.
-func (r *Router) InternalServerError(handlers ...Handler) {
-	handlers = validateAndWrapHandlers(handlers)
-	r.internalServerError = func(c *Context, err error) {
-		c.index = 0
-		c.handlers = handlers
-		c.Map(err)
-		c.run()
-	}
-}
+func (r *Router) InternalServerError(handlers ...Handler) { _ = "STUB: not implemented"; return }
 
 // SetHandlerWrapper sets handlerWrapper for the router.
-func (r *Router) SetHandlerWrapper(f func(Handler) Handler) {
-	r.handlerWrapper = f
-}
+func (r *Router) SetHandlerWrapper(f func(Handler) Handler) { _ = "STUB: not implemented"; return }
 
 func (r *Router) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if t, ok := r.routers[req.Method]; ok {
-		// Fast match for static routes
-		leaf := r.getLeaf(req.Method, req.URL.Path)
-		if leaf != nil {
-			leaf.handle(rw, req, nil)
-			return
-		}
-
-		h, p, ok := t.Match(req.URL.EscapedPath())
-		if ok {
-			if splat, ok := p["*0"]; ok {
-				p["*"] = splat // Easy name.
-			}
-			h(rw, req, p)
-			return
-		}
-	}
-
-	r.notFound(rw, req)
+	_ = "STUB: not implemented"
+	return
 }
+
+// Fast match for static routes
+
+// Easy name.
 
 // URLFor builds path part of URL by given pair values.
-func (r *Router) URLFor(name string, pairs ...string) string {
-	leaf, ok := r.namedRoutes[name]
-	if !ok {
-		panic("route with given name does not exists: " + name)
-	}
-	return leaf.URLPath(pairs...)
-}
+func (r *Router) URLFor(name string, pairs ...string) string { _ = "STUB: not implemented"; return "" }
 
 // ComboRouter represents a combo router.
 type ComboRouter struct {
@@ -328,54 +192,26 @@ type ComboRouter struct {
 	lastRoute *Route
 }
 
-func (cr *ComboRouter) checkMethod(name string) {
-	if cr.methods[name] {
-		panic("method '" + name + "' has already been registered")
-	}
-	cr.methods[name] = true
-}
+func (cr *ComboRouter) checkMethod(name string) { _ = "STUB: not implemented"; return }
 
 func (cr *ComboRouter) route(fn func(string, ...Handler) *Route, method string, h ...Handler) *ComboRouter {
-	cr.checkMethod(method)
-	cr.lastRoute = fn(cr.pattern, append(cr.handlers, h...)...)
-	return cr
+	_ = "STUB: not implemented"
+	return nil
 }
 
-func (cr *ComboRouter) Get(h ...Handler) *ComboRouter {
-	if cr.router.autoHead {
-		cr.Head(h...)
-	}
-	return cr.route(cr.router.Get, "GET", h...)
-}
+func (cr *ComboRouter) Get(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Patch(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Patch, "PATCH", h...)
-}
+func (cr *ComboRouter) Patch(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Post(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Post, "POST", h...)
-}
+func (cr *ComboRouter) Post(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Put(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Put, "PUT", h...)
-}
+func (cr *ComboRouter) Put(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Delete(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Delete, "DELETE", h...)
-}
+func (cr *ComboRouter) Delete(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Options(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Options, "OPTIONS", h...)
-}
+func (cr *ComboRouter) Options(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
-func (cr *ComboRouter) Head(h ...Handler) *ComboRouter {
-	return cr.route(cr.router.Head, "HEAD", h...)
-}
+func (cr *ComboRouter) Head(h ...Handler) *ComboRouter { _ = "STUB: not implemented"; return nil }
 
 // Name sets name of ComboRouter route.
-func (cr *ComboRouter) Name(name string) {
-	if cr.lastRoute == nil {
-		panic("no corresponding route to be named")
-	}
-	cr.lastRoute.Name(name)
-}
+func (cr *ComboRouter) Name(name string) { _ = "STUB: not implemented"; return }

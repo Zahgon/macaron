@@ -21,58 +21,25 @@ import (
 )
 
 // MaxAge sets the maximum age for a provided cookie
-func MaxAge(maxAge int) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.MaxAge = maxAge
-	}
-}
+func MaxAge(maxAge int) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // Path sets the path for a provided cookie
-func Path(path string) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.Path = path
-	}
-}
+func Path(path string) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // Domain sets the domain for a provided cookie
-func Domain(domain string) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.Domain = domain
-	}
-}
+func Domain(domain string) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // Secure sets the secure setting for a provided cookie
-func Secure(secure bool) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.Secure = secure
-	}
-}
+func Secure(secure bool) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // HttpOnly sets the HttpOnly setting for a provided cookie
-func HttpOnly(httpOnly bool) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.HttpOnly = httpOnly
-	}
-}
+func HttpOnly(httpOnly bool) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // HTTPOnly sets the HttpOnly setting for a provided cookie
-func HTTPOnly(httpOnly bool) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.HttpOnly = httpOnly
-	}
-}
+func HTTPOnly(httpOnly bool) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // Expires sets the expires and rawexpires for a provided cookie
-func Expires(expires time.Time) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.Expires = expires
-		c.RawExpires = expires.Format(time.UnixDate)
-	}
-}
+func Expires(expires time.Time) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
 
 // SameSite sets the SameSite for a provided cookie
-func SameSite(sameSite http.SameSite) func(*http.Cookie) {
-	return func(c *http.Cookie) {
-		c.SameSite = sameSite
-	}
-}
+func SameSite(sameSite http.SameSite) func(*http.Cookie) { _ = "STUB: not implemented"; return nil }
